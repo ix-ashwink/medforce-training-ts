@@ -9,13 +9,15 @@ import FormPage from './pages/FormPage';
 function App() {
   return (
     <div className="App">
-      <div className="container m-auto">
-        <Navbar />
+      <div className="container-fluid">
+        <div className='row'>
+          <Navbar />
+        </div>
         <div className='form-wrapper'>
           <Routes>
             <Route path="/" element={<FormPage />} />
           </Routes>
-        </div>
+        </div>  
       </div>
     </div>
   );
