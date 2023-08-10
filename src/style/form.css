@@ -1,5 +1,5 @@
 :root {
-    --form-bg-color: #48a7ff;
+    --form-bg-color: #2dcce4b3;
   }
 
 body {
@@ -12,8 +12,8 @@ body {
     grid-gap: 6.5px;
     background: var(--form-bg-color);
     text-align: left;
-    box-shadow: 0px 14px 80px rgba(34, 35, 58, 0.2);
-    padding: 40px 55px 45px 55px;
+    box-shadow: 0px 14px 20px rgba(34, 35, 58, 0.2);
+    padding: 30px 55px 30px 55px;
     border-radius: 15px;
     transition: all .3s;
 }
@@ -27,12 +27,15 @@ body {
 .form .form-control:focus {
     border-color: #167bff;
     box-shadow: none;
-  }
+}
 .form-wrapper {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 450px;
     margin: auto;
     background: #ffffff;
 }
+.form-group.required .control-label:after {
+    content:" *";
+    color:red;
+  }
