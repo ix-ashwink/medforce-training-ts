@@ -3,40 +3,68 @@ import { User } from "../constants/entities";
 import { validationErrors, success } from "../constants/messages"; 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useForm } from "../hooks/useForm";
 
 const FormPage = () => {
 
-  const [user, setUser] = useState<User>({firstName:"",lastName: "",email:"",password:"",phoneNumber:"", dateOfBirth:"",
-  street:"",town:"",city:"",zipcode:"", bio:""});
+  // const [user, setUser] = useState<User>({firstName:"",lastName: "",email:"",password:"",phoneNumber:"", dateOfBirth:"",
+  // street:"",town:"",city:"",zipcode:"", bio:""});
 
-  const handleChange = (e:any) => {
-    const {name, value} = e.target;
-    setUser({...user, [name]: value}) 
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/;
-    const emailPattern = /^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/;
-
-    if (!emailPattern.test(user.email)) {
-      toast.error(validationErrors.emailError, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-
-    if (!passwordPattern.test(user.password)) {
-      toast.error(validationErrors.passwordError, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-
-    toast.success(success.formSubmitted, {
+  const { handleSubmit, handleChange, data: user, errors } = useForm<User>({
+    validations: {
+      firstName: {
+        pattern: {
+          value: '^[A-Za-z]*$',
+          message: validationErrors.nameError,
+        },
+      },
+      email: {
+        pattern: {
+          value: '^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$',
+          message: validationErrors.emailError,
+        },
+      },
+      password: {
+        pattern: {
+          value: "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$",
+          message: validationErrors.passwordError,
+        },
+      },
+    },
+    onSubmit: () => toast.success(success.formSubmitted, {
       position: toast.POSITION.TOP_RIGHT,
-    });
-  };
+    }),
+  });
+
+
+  // const handleChange = (e:any) => {
+  //   const {name, value} = e.target;
+  //   setUser({...user, [name]: value}) 
+  // }
+
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/;
+  //   const emailPattern = /^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/;
+
+  //   if (!emailPattern.test(user.email)) {
+  //     toast.error(validationErrors.emailError, {
+  //       position: toast.POSITION.TOP_RIGHT,
+  //     });
+  //     return;
+  //   }
+
+    // if (!passwordPattern.test(user.password)) {
+    //   toast.error(validationErrors.passwordError, {
+    //     position: toast.POSITION.TOP_RIGHT,
+    //   });
+    //   return;
+    // }
+
+  //   toast.success(success.formSubmitted, {
+  //     position: toast.POSITION.TOP_RIGHT,
+  //   });
+  // };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -50,8 +78,12 @@ const FormPage = () => {
               type="text"
               name="firstName"
               placeholder="Enter First Name"
-              onChange={handleChange}
+              value={user.firstName || ''}
+              onChange={handleChange('firstName')}
+              // onChange={handleChange}
             />
+            {errors.firstName && toast.error(validationErrors.nameError, {
+              position: toast.POSITION.TOP_RIGHT,})}
           </div>
           <div className="col-md-6">
             <label>Last Name</label>
@@ -60,7 +92,7 @@ const FormPage = () => {
               type="text"
               name="lastName"
               placeholder="Enter Last Name"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
         </div>
@@ -72,8 +104,11 @@ const FormPage = () => {
               type="text"
               name="email"
               placeholder="Enter your email..."
-              onChange={handleChange}
+              value={user.email || ''}
+              onChange={handleChange('email')}
             />
+            {errors.email && toast.error(validationErrors.emailError, {
+              position: toast.POSITION.TOP_RIGHT,})}
           </div> 
           <div className="col-md-6">
             <label className="control-label">Password</label>
@@ -83,8 +118,11 @@ const FormPage = () => {
               name="password"
               placeholder="Enter a strong password..."
               autoComplete="off"
-              onChange={handleChange}
+              value={user.password || ''}
+              onChange={handleChange('password')}
             />
+            {errors.password && toast.error(validationErrors.passwordError, {
+              position: toast.POSITION.TOP_RIGHT,})}
           </div>
         </div>
         <div className="row mb-1">
@@ -95,7 +133,7 @@ const FormPage = () => {
               type="text"
               name="phoneNumber"
               placeholder="Enter Phone No."
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div> 
           <div className="col-md-6">
@@ -104,7 +142,7 @@ const FormPage = () => {
               className="form-control"
               type="date"
               name="dateOfBirth"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
         </div>
@@ -116,7 +154,7 @@ const FormPage = () => {
               type="text"
               name="street"
               placeholder="Enter Street"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
           <div className="col-md-6">
@@ -126,7 +164,7 @@ const FormPage = () => {
               type="text"
               name="town"
               placeholder="Enter Town"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
         </div>
@@ -138,7 +176,7 @@ const FormPage = () => {
               type="text"
               name="city"
               placeholder="Enter City"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
           <div className="col-md-6">
@@ -148,7 +186,7 @@ const FormPage = () => {
               type="text"
               name="zipcode"
               placeholder="Enter Zipcode"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
         </div>
@@ -159,7 +197,7 @@ const FormPage = () => {
               className="form-control"
               name="bio"
               placeholder="Enter Bio"
-              onChange={handleChange}
+              // onChange={handleChange}
             />
           </div>
         </div>
