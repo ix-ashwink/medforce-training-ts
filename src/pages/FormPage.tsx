@@ -107,8 +107,8 @@ const FormPage = () => {
               value={user.email || ''}
               onChange={handleChange('email')}
             />
-            {errors.email && toast.error(validationErrors.emailError, {
-              position: toast.POSITION.TOP_RIGHT,})}
+            {/* {errors.email && toast.error(validationErrors.emailError, {
+              position: toast.POSITION.TOP_RIGHT,})} */}
           </div> 
           <div className="col-md-6">
             <label className="control-label">Password</label>
