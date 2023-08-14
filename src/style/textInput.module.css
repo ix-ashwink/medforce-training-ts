@@ -1,0 +1,23 @@
+.label {
+    color: darkcyan;
+}
+.label:required {
+    border-left: 4px solid #888;
+} 
+.input {
+    border: 1px solid #ccc;
+    border-radius: 0.25em;
+    padding: 0.2em 0.4em;
+    width: 100%;
+} 
+.input:required {
+    border-left: 4px solid #888;
+} 
+.input:focus {
+    outline: 2px solid lightseagreen;
+} 
+.validationMessage {
+    font-size: 0.8em;
+    color: red;
+    margin-top: 0.25em;
+}

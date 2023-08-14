@@ -1,6 +1,6 @@
 :root {
     --form-bg-color: #2dcce4b3;
-  }
+}
 
 body {
     font-family: "Open Sans";
@@ -13,9 +13,8 @@ body {
     background: var(--form-bg-color);
     text-align: left;
     box-shadow: 0px 14px 20px rgba(34, 35, 58, 0.2);
-    padding: 30px 55px 30px 55px;
+    padding: 30px 50px 30px 50px;
     border-radius: 15px;
-    transition: all .3s;
 }
 .form h1,h2,h3,h4,h5 {
     text-align: center;
@@ -36,6 +35,6 @@ body {
     background: #ffffff;
 }
 .form-group.required .control-label:after {
-    content:" *";
-    color:red;
-  }
+    content: " *";
+    color: red;
+}

@@ -1,179 +1,74 @@
-import React, { useState } from "react";
-import { User } from "../constants/entities";
 import { validationErrors, success } from "../constants/messages"; 
+import { patterns } from "../constants/patterns";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import TextInput from "../components/TextInput";
+import Form from "../components/Form";
+import 'react-modern-calendar-datepicker/lib/DatePicker.css';
+import DatePicker from 'react-modern-calendar-datepicker';
 
 const FormPage = () => {
 
-  const [user, setUser] = useState<User>({firstName:"",lastName: "",email:"",password:"",phoneNumber:"", dateOfBirth:"",
-  street:"",town:"",city:"",zipcode:"", bio:""});
-
-  const handleChange = (e:any) => {
-    const {name, value} = e.target;
-    setUser({...user, [name]: value}) 
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/;
-    const emailPattern = /^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/;
-
-    if (!emailPattern.test(user.email)) {
-      toast.error(validationErrors.emailError, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-
-    if (!passwordPattern.test(user.password)) {
-      toast.error(validationErrors.passwordError, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-
+  const onSubmit = (data: FormData) => {
+    console.log(Object.fromEntries(data.entries()));
     toast.success(success.formSubmitted, {
       position: toast.POSITION.TOP_RIGHT,
     });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="form form-group required mt-4 mb-4">
-        <h3 className="mb-2">Form Validations</h3>
-        <div className="row mb-1">
-          <div className="col-md-6">
-            <label className="">First Name</label>
-            <input
-              className="form-control"
-              type="text"
-              name="firstName"
-              placeholder="Enter First Name"
-              onChange={handleChange}
-            />
+    <Form onSubmit = {onSubmit}>
+      <div className="required mb-2">
+        <h3 className="mb-3">Form Validations</h3>
+        <div className="row mb-3">
+          <div className="col-md-3">
+            <TextInput label="First Name" id="firstName" name="firstName" required 
+              pattern={patterns.namePattern} errorText= {validationErrors.nameError}/>
           </div>
-          <div className="col-md-6">
-            <label>Last Name</label>
-            <input
-              className="form-control"
-              type="text"
-              name="lastName"
-              placeholder="Enter Last Name"
-              onChange={handleChange}
-            />
+          <div className="col-md-3">
+            <TextInput label="Last Name" id="lastname" name="lastname" required 
+              pattern={patterns.namePattern} errorText= {validationErrors.nameError}/>
+          </div>
+          <div className="col-md-3">
+            <TextInput label="Email" id="email" type="email" name="email" required autoComplete="email"
+              pattern= {patterns.emailPattern} errorText= {validationErrors.emailError}/>
+          </div>
+          <div className="col-md-3">
+            <TextInput label="Password" id="password" type="password" name="password" required autoComplete="new-password"
+              pattern= {patterns.passwordPattern} errorText= {validationErrors.passwordError}/>
           </div>
         </div>
-        <div className="row mb-1">
-          <div className="col-md-6">
-            <label className="control-label">Email</label>
-            <input
-              className="form-control"
-              type="text"
-              name="email"
-              placeholder="Enter your email..."
-              onChange={handleChange}
+        <div className="row mb-3">
+          <div className="col-md-3">
+            <TextInput
+              label="Phone No." id="phoneNumber" name="phoneNumber" type="tel"
             />
-          </div> 
-          <div className="col-md-6">
-            <label className="control-label">Password</label>
-            <input
-              className="form-control"
-              type="password"
-              name="password"
-              placeholder="Enter a strong password..."
-              autoComplete="off"
-              onChange={handleChange}
-            />
+          </div>
+          <div className="col-md-3">
+            <TextInput label="Date of Birth" id="dateOfBirth" name="dateOfBirth" 
+              type="date"/>
           </div>
         </div>
-        <div className="row mb-1">
-          <div className="col-md-6">
-            <label>Phone No.</label>
-            <input
-              className="form-control"
-              type="text"
-              name="phoneNumber"
-              placeholder="Enter Phone No."
-              onChange={handleChange}
-            />
-          </div> 
-          <div className="col-md-6">
-            <label>Date of Birth</label>
-            <input
-              className="form-control"
-              type="date"
-              name="dateOfBirth"
-              onChange={handleChange}
-            />
+        <div className="row mb-3">
+          <div className="col-md-3">
+            <TextInput label="Street" id="street" name="street" />
           </div>
-        </div>
-        <div className="row mb-1">
-          <div className="col-md-6">
-            <label>Street</label>
-            <input
-              className="form-control"
-              type="text"
-              name="street"
-              placeholder="Enter Street"
-              onChange={handleChange}
-            />
+          <div className="col-md-3">
+            <TextInput label="Town" id="town" name="town" />
           </div>
-          <div className="col-md-6">
-            <label>Town</label>
-            <input
-              className="form-control"
-              type="text"
-              name="town"
-              placeholder="Enter Town"
-              onChange={handleChange}
-            />
+          <div className="col-md-3">
+            <TextInput label="City" id="city" name="city" />
           </div>
-        </div>
-        <div className="row mb-1">
-          <div className="col-md-6">
-            <label className="">City</label>
-            <input
-              className="form-control"
-              type="text"
-              name="city"
-              placeholder="Enter City"
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <label>Zipcode</label>
-            <input
-              className="form-control"
-              type="text"
-              name="zipcode"
-              placeholder="Enter Zipcode"
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <div className="row mb-1">
-          <div>
-            <label>Bio</label>
-            <textarea
-              className="form-control"
-              name="bio"
-              placeholder="Enter Bio"
-              onChange={handleChange}
-            />
+          <div className="col-md-3">
+            <TextInput label="Zipcode" id="zipcode" name="zipcode" />
           </div>
         </div>
         <div className="text-center">
-          <button
-            type="submit"
-            className="mt-3 btn btn-primary"
-            disabled={user.email === "" || user.password === ""}>
-            Submit
-          </button>
+          <button className="mt-3 btn btn-primary">Submit</button>
         </div>
       </div>
-    <ToastContainer />
-    </form >
+      <ToastContainer />
+    </Form>
   );
 };
 export default FormPage;
