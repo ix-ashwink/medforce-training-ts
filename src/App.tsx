@@ -5,6 +5,7 @@ import "bootstrap/dist/js/bootstrap.bundle.js";
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import FormPage from './pages/FormPage';
+import TablePage from './pages/TablePage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <div className='col-10 form-wrapper'>
             <Routes>
               <Route path="/" element= {<FormPage />} />
+              <Route path="table" element= {<TablePage />} />
             </Routes>
           </div>
         </div>  
