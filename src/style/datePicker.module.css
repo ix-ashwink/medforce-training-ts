@@ -4,11 +4,15 @@
 .label:required {
     border-left: 4px solid #888;
 } 
+.dateWrapper {
+    width: 100%;
+}
 .input {
     border: 1px solid #ccc;
-    border-radius: 0.25em;
-    padding: 0.2em 0.4em;
+    border-radius: 0.25em !important;
+    padding: 0.2em 0.4em !important;
     width: 100%;
+    font-size: 1em !important;
 }
 .input:required {
     border-left: 4px solid #888;
