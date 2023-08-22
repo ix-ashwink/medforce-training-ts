@@ -6,8 +6,7 @@ export type Person = {
   age: number
   visits: number
   progress: number
-  status: 'relationship' | 'complicated' | 'single'
-  subRows?: Person[]
+  status: 'Relationship' | 'Complicated' | 'Single'
 }
 
 const range = (len: number) => {
@@ -26,9 +25,9 @@ const newPerson = (): Person => {
     visits: faker.datatype.number(1000),
     progress: faker.datatype.number(100),
     status: faker.helpers.shuffle<Person['status']>([
-      'relationship',
-      'complicated',
-      'single',
+      'Relationship',
+      'Complicated',
+      'Single',
     ])[0]!,
   }
 }
@@ -39,7 +38,6 @@ export function makeData(...lens: number[]) {
     return range(len).map((d): Person => {
       return {
         ...newPerson(),
-        subRows: lens[depth + 1] ? makeDataLevel(depth + 1) : undefined,
       }
     })
   }

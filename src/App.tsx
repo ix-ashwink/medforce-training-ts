@@ -15,7 +15,7 @@ function App() {
           <Navbar />
         </div>
         <div className='row d-flex justify-content-center'>
-          <div className='col-10 form-wrapper'>
+          <div className='col-10'>
             <Routes>
               <Route path="/" element= {<FormPage />} />
               <Route path="table" element= {<TablePage />} />

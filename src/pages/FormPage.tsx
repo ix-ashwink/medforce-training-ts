@@ -11,6 +11,7 @@ import '@hassanmojab/react-modern-calendar-datepicker/lib/DatePicker.css';
 import { useState } from "react";
 import styles from "../style/datePicker.module.css";
 import Label from "../components/Label";
+import "../style/form.css";
 
 const FormPage = () => {
 
@@ -44,7 +45,8 @@ const FormPage = () => {
   };
 
   return (
-    <Form onSubmit = {onSubmit}>
+    <div className="form-wrapper">
+      <Form onSubmit = {onSubmit}>
       <div className="required mb-2">
         <h3 className="mb-3">Form Validations</h3>
         <div className="row mb-3">
@@ -126,6 +128,7 @@ const FormPage = () => {
       </div>
       <ToastContainer />
     </Form>
+    </div>
   );
 };
 export default FormPage;

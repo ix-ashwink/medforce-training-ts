@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useReducer, useMemo, useEffect} from 'react'
 import '../style/table.css';
 import {
   Column,
@@ -20,54 +20,60 @@ import {
   FilterFns,
 } from '@tanstack/react-table'
 
-import { RankingInfo, rankItem, compareItems, } from '@tanstack/match-sorter-utils'
+// import { RankingInfo, rankItem, compareItems, } from '@tanstack/match-sorter-utils'
 import { makeData, Person } from '../data/makeData';
 
-declare module '@tanstack/table-core' {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>
-  }
-  interface FilterMeta {
-    itemRank: RankingInfo
-  }
-}
+// declare module '@tanstack/table-core' {
+//   interface FilterFns {
+//     fuzzy: FilterFn<unknown>
+//   }
+//   interface FilterMeta {
+//     itemRank: RankingInfo
+//   }
+// }
 
-const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-  // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value)
+// const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+//   // Rank the item
+//   const itemRank = rankItem(row.getValue(columnId), value)
 
-  // Store the itemRank info
-  addMeta({
-    itemRank,
-  })
+//   // Store the itemRank info
+//   addMeta({ itemRank, })
 
-  // Return if the item should be filtered in/out
-  return itemRank.passed
-}
+//   // Return if the item should be filtered in/out
+//   return itemRank.passed
+// }
 
-const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
-  let dir = 0
+// const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
+//   let dir = 0
 
-  // Only sort by rank if the column has ranking information
-  if (rowA.columnFiltersMeta[columnId]) {
-    dir = compareItems(
-      rowA.columnFiltersMeta[columnId]?.itemRank!,
-      rowB.columnFiltersMeta[columnId]?.itemRank!
-    )
-  }
-
-  // Provide an alphanumeric fallback for when the item ranks are equal
-  return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
-}
+//   // Only sort by rank if the column has ranking information
+//   if (rowA.columnFiltersMeta[columnId]) {
+//     dir = compareItems(
+//       rowA.columnFiltersMeta[columnId]?.itemRank!,
+//       rowB.columnFiltersMeta[columnId]?.itemRank!
+//     )
+//   }
+//   // Provide an alphanumeric fallback for when the item ranks are equal
+//   return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
+// }
 
 const TablePage = () => {
 
-  const rerender = React.useReducer(() => ({}), {})[1]
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [data, setData] = useState<Person[]>(() => makeData(1000));
+  
+  const refreshData = () => setData(old => makeData(1000));
+  const rerender = useReducer(() => ({}), {})[1];
+  const resetTable = () => {
+    table.resetPagination();
+    table.resetColumnFilters();
+    table.resetGlobalFilter();
+    table.resetRowSelection();
+    table.resetSorting();
+  }
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = React.useState('')
-
-  const columns = React.useMemo<ColumnDef<Person, any>[]>(
+  const columns = useMemo<ColumnDef<Person, any>[]>(
     () => [
       {
         header: 'Name',
@@ -76,6 +82,7 @@ const TablePage = () => {
           {
             accessorKey: 'firstName',
             cell: info => info.getValue(),
+            header: () => <span>First Name</span>,
             footer: props => props.column.id,
           },
           {
@@ -91,8 +98,8 @@ const TablePage = () => {
             header: 'Full Name',
             cell: info => info.getValue(),
             footer: props => props.column.id,
-            filterFn: 'fuzzy',
-            sortingFn: fuzzySort,
+            // filterFn: 'fuzzy',
+            // sortingFn: fuzzySort,
           },
         ],
       },
@@ -131,14 +138,11 @@ const TablePage = () => {
     []
   )
 
-  const [data, setData] = React.useState<Person[]>(() => makeData(50000))
-  const refreshData = () => setData(old => makeData(50000))
-
   const table = useReactTable({
     data,
     columns,
     filterFns: {
-      fuzzy: fuzzyFilter,
+      // fuzzy: fuzzyFilter,
     },
     state: {
       columnFilters,
@@ -146,7 +150,7 @@ const TablePage = () => {
     },
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: fuzzyFilter,
+    // globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -159,7 +163,7 @@ const TablePage = () => {
     debugColumns: false,
   })
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (table.getState().columnFilters[0]?.id === 'fullName') {
       if (table.getState().sorting[0]?.id !== 'fullName') {
         table.setSorting([{ id: 'fullName', desc: false }])
@@ -168,17 +172,16 @@ const TablePage = () => {
   }, [table.getState().columnFilters[0]?.id])
 
   return (
-    <div className="p-2">
-      <div>
+    <div className="row p-2 mt-3">
+      <div className='col g-0 text-start mb-2'>
         <DebouncedInput
-          value={globalFilter ?? ''}
-          onChange={value => setGlobalFilter(String(value))}
-          className="p-2 font-lg shadow border border-block"
-          placeholder="Search all columns..."
+          value= {globalFilter ?? ''}
+          onChange= {value => setGlobalFilter(String(value))}
+          className="p-2 font-lg border border-block"
+          placeholder="Search all Columns..."
         />
       </div>
-      <div className="h-2" />
-      <table>
+      <table className='mb-2'> 
         <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
@@ -190,9 +193,8 @@ const TablePage = () => {
                         <div
                           {...{
                             className: header.column.getCanSort()
-                              ? 'cursor-pointer select-none'
-                              : '',
-                            onClick: header.column.getToggleSortingHandler(),
+                              ? 'cursor-pointer select-none': '',
+                              onClick: header.column.getToggleSortingHandler(),
                           }}
                         >
                           {flexRender(
@@ -236,8 +238,20 @@ const TablePage = () => {
           })}
         </tbody>
       </table>
-      <div className="h-2" />
-      <div className="flex items-center gap-2">
+      <div className="g-0 d-flex align-items-center gap-2 mb-3">
+        <div>
+          Showing 
+          <strong>
+          {' '} {(table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + 1} 
+          {' '} to {' '}
+            {(table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + table.getState().pagination.pageSize}
+          </strong>  
+          {' '} of {' '}
+          <strong>
+            {table.getPrePaginationRowModel().rows.length}
+          </strong>
+          {' '} entries
+        </div>
         <button
           className="border rounded p-1"
           onClick={() => table.setPageIndex(0)}
@@ -266,31 +280,31 @@ const TablePage = () => {
         >
           {'>>'}
         </button>
-        <span className="flex items-center gap-1">
-          <div>Page</div>
+        <span className="d-flex align-items-center gap-1">
+          Page 
           <strong>
-            {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            {' '}{table.getState().pagination.pageIndex + 1} of {' '} {table.getPageCount()}
           </strong>
         </span>
-        <span className="flex items-center gap-1">
+        <span className="d-flex align-items-center gap-1">
           | Go to page:
           <input
             type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
+            // defaultValue={table.getState().pagination.pageIndex + 1}
+            value={table.getState().pagination.pageIndex + 1}
             onChange={e => {
               const page = e.target.value ? Number(e.target.value) - 1 : 0
-              table.setPageIndex(page)
+              table.setPageIndex(page);
             }}
-            className="border p-1 rounded w-16"
+            className="border p-1 rounded"
           />
         </span>
         <select
+          className="border p-1 rounded"
           value={table.getState().pagination.pageSize}
           onChange={e => {
             table.setPageSize(Number(e.target.value))
-          }}
-        >
+          }}>
           {[10, 20, 30, 40, 50].map(pageSize => (
             <option key={pageSize} value={pageSize}>
               Show {pageSize}
@@ -298,31 +312,39 @@ const TablePage = () => {
           ))}
         </select>
       </div>
-      <div>{table.getPrePaginationRowModel().rows.length} Rows</div>
       <div>
-        <button onClick={() => rerender()}>Force Rerender</button>
-      </div>
-      <div>
-        <button onClick={() => refreshData()}>Refresh Data</button>
+        <button
+          className='mx-1 p-2 border-1 rounded'
+          onClick={() => rerender()}>
+            Force Rerender
+        </button>
+        <button
+          className='mx-1 p-2 border-1 rounded' 
+          onClick={() => resetTable()}>
+            Reset
+        </button>
+        <button
+          className='mx-1 p-2 border-1 rounded'  
+          onClick={() => refreshData()}>
+            Refresh Data
+        </button>
       </div>
       {/* <pre>{JSON.stringify(table.getState(), null, 2)}</pre> */}
     </div>
   )
 }
-function Filter({
-  column,
-  table,
-}: {
-  column: Column<any, unknown>
-  table: Table<any>
-}) {
+function Filter({ column, table, }: 
+  {
+    column: Column<any, unknown>
+    table: Table<any>
+  }) {
   const firstValue = table
     .getPreFilteredRowModel()
     .flatRows[0]?.getValue(column.id)
 
   const columnFilterValue = column.getFilterValue()
 
-  const sortedUniqueValues = React.useMemo(
+  const sortedUniqueValues = useMemo(
     () =>
       typeof firstValue === 'number'
         ? []
@@ -346,7 +368,7 @@ function Filter({
               ? `(${column.getFacetedMinMaxValues()?.[0]})`
               : ''
           }`}
-          className="w-24 border shadow rounded"
+          className="px-1 mx-1 border rounded"
         />
         <DebouncedInput
           type="number"
@@ -361,10 +383,9 @@ function Filter({
               ? `(${column.getFacetedMinMaxValues()?.[1]})`
               : ''
           }`}
-          className="w-24 border shadow rounded"
+          className="px-1 mx-1 border rounded"
         />
       </div>
-      <div className="h-1" />
     </div>
   ) : (
     <>
@@ -378,10 +399,9 @@ function Filter({
         value={(columnFilterValue ?? '') as string}
         onChange={value => column.setFilterValue(value)}
         placeholder={`Search... (${column.getFacetedUniqueValues().size})`}
-        className="w-36 border shadow rounded"
+        className="px-1 border rounded"
         list={column.id + 'list'}
       />
-      <div className="h-1" />
     </>
   )
 }
@@ -397,13 +417,13 @@ function DebouncedInput({
   onChange: (value: string | number) => void
   debounce?: number
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = React.useState(initialValue)
+  const [value, setValue] = useState(initialValue)
 
-  React.useEffect(() => {
+  useEffect(() => {
     setValue(initialValue)
   }, [initialValue])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timeout = setTimeout(() => {
       onChange(value)
     }, debounce)
