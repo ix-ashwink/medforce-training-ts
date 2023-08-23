@@ -32,7 +32,7 @@ const Form = ({ action, children, className, onSubmit }: Props) => {
   };
 
   return (
-    <form action={action} onSubmit={handleSubmit} noValidate className ="form form-group mt-4">
+    <form action={action} onSubmit={handleSubmit} noValidate className = "form form-group mt-4">
         <div>
             {children}
         </div>

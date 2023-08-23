@@ -1,4 +1,4 @@
-import React, {useState, useReducer, useMemo, useEffect} from 'react'
+import React, {useState, useMemo, useEffect} from 'react'
 import '../style/table.css';
 import {
   Column,
@@ -64,7 +64,6 @@ const TablePage = () => {
   const [data, setData] = useState<Person[]>(() => makeData(1000));
   
   const refreshData = () => setData(old => makeData(1000));
-  const rerender = useReducer(() => ({}), {})[1];
   const resetTable = () => {
     table.resetPagination();
     table.resetColumnFilters();
@@ -75,10 +74,10 @@ const TablePage = () => {
 
   const columns = useMemo<ColumnDef<Person, any>[]>(
     () => [
-      {
-        header: 'Name',
-        footer: props => props.column.id,
-        columns: [
+      // {
+      //   header: 'Name',
+      //   footer: props => props.column.id,
+      //   columns: [
           {
             accessorKey: 'firstName',
             cell: info => info.getValue(),
@@ -93,6 +92,45 @@ const TablePage = () => {
             footer: props => props.column.id,
           },
           {
+            accessorKey: 'firstName',
+            cell: info => info.getValue(),
+            header: () => <span>First Name</span>,
+            footer: props => props.column.id,
+          },
+          {
+            accessorFn: row => row.lastName,
+            id: 'lastName',
+            cell: info => info.getValue(),
+            header: () => <span>Last Name</span>,
+            footer: props => props.column.id,
+          },
+          {
+            accessorKey: 'firstName',
+            cell: info => info.getValue(),
+            header: () => <span>First Name</span>,
+            footer: props => props.column.id,
+          },
+          {
+            accessorFn: row => row.lastName,
+            id: 'lastName',
+            cell: info => info.getValue(),
+            header: () => <span>Last Name</span>,
+            footer: props => props.column.id,
+          },
+          {
+            accessorKey: 'firstName',
+            cell: info => info.getValue(),
+            header: () => <span>First Name</span>,
+            footer: props => props.column.id,
+          },
+          {
+            accessorFn: row => row.lastName,
+            id: 'lastName1',
+            cell: info => info.getValue(),
+            header: () => <span>Last Name Pinned</span>,
+            footer: props => props.column.id,
+          },
+          {
             accessorFn: row => `${row.firstName} ${row.lastName}`,
             id: 'fullName',
             header: 'Full Name',
@@ -101,39 +139,39 @@ const TablePage = () => {
             // filterFn: 'fuzzy',
             // sortingFn: fuzzySort,
           },
-        ],
-      },
-      {
-        header: 'Info',
-        footer: props => props.column.id,
-        columns: [
-          {
-            accessorKey: 'age',
-            header: () => 'Age',
-            footer: props => props.column.id,
-          },
-          {
-            header: 'More Info',
-            columns: [
-              {
-                accessorKey: 'visits',
-                header: () => <span>Visits</span>,
-                footer: props => props.column.id,
-              },
-              {
-                accessorKey: 'status',
-                header: 'Status',
-                footer: props => props.column.id,
-              },
-              {
-                accessorKey: 'progress',
-                header: 'Profile Progress',
-                footer: props => props.column.id,
-              },
-            ],
-          },
-        ],
-      },
+      //   ],
+      // },
+      // {
+      //   header: 'Info',
+      //   footer: props => props.column.id,
+      //   columns: [
+      //     {
+      //       accessorKey: 'age',
+      //       header: () => 'Age',
+      //       footer: props => props.column.id,
+      //     },
+      //     {
+      //       header: 'More Info',
+      //       columns: [
+      //         {
+      //           accessorKey: 'visits',
+      //           header: () => <span>Visits</span>,
+      //           footer: props => props.column.id,
+      //         },
+      //         {
+      //           accessorKey: 'status',
+      //           header: 'Status',
+      //           footer: props => props.column.id,
+      //         },
+      //         {
+      //           accessorKey: 'progress',
+      //           header: 'Profile Progress',
+      //           footer: props => props.column.id,
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // },
     ],
     []
   )
@@ -147,6 +185,7 @@ const TablePage = () => {
     state: {
       columnFilters,
       globalFilter,
+      columnPinning: { right: ['lastName1'] }
     },
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -181,63 +220,71 @@ const TablePage = () => {
           placeholder="Search all Columns..."
         />
       </div>
-      <table className='mb-2'> 
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder ? null : (
-                      <>
-                        <div
-                          {...{
-                            className: header.column.getCanSort()
-                              ? 'cursor-pointer select-none': '',
-                              onClick: header.column.getToggleSortingHandler(),
-                          }}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </div>
-                        {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null}
-                      </>
-                    )}
-                  </th>
-                )
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => {
-            return (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => {
+      <div className='g-0 mb-2 scrollable'>
+        <table> 
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => {
                   return (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                    <th 
+                      key={header.id} colSpan={header.colSpan}
+                      className = {header.column.id === 'lastName1'? 'sticky-Col':''}
+                      >
+                      {header.isPlaceholder ? null : (
+                        <>
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? 'cursor-pointer select-none': '',
+                                onClick: header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {{
+                              asc: ' 🔼',
+                              desc: ' 🔽',
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                          {header.column.getCanFilter() ? (
+                            <div>
+                              <Filter column={header.column} table={table} />
+                            </div>
+                          ) : null}
+                        </>
                       )}
-                    </td>
+                    </th>
                   )
                 })}
               </tr>
-            )
-          })}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => {
+              return (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => {
+                    return (
+                      <td 
+                        key={cell.id}
+                        className = {cell.column.id === 'lastName1'? 'sticky-Col':''}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
       <div className="g-0 d-flex align-items-center gap-2 mb-3">
         <div>
           Showing 
@@ -313,11 +360,6 @@ const TablePage = () => {
         </select>
       </div>
       <div>
-        <button
-          className='mx-1 p-2 border-1 rounded'
-          onClick={() => rerender()}>
-            Force Rerender
-        </button>
         <button
           className='mx-1 p-2 border-1 rounded' 
           onClick={() => resetTable()}>
