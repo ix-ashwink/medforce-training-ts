@@ -18,10 +18,18 @@ import {
   ColumnDef,
   flexRender,
   FilterFns,
+  RowData,
 } from '@tanstack/react-table'
 
 // import { RankingInfo, rankItem, compareItems, } from '@tanstack/match-sorter-utils'
 import { makeData, Person } from '../data/makeData';
+import exportExcel from '../services/excelExport';
+
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void
+  }
+}
 
 // declare module '@tanstack/table-core' {
 //   interface FilterFns {
@@ -57,11 +65,38 @@ import { makeData, Person } from '../data/makeData';
 //   return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
 // }
 
+// Give our default column cell renderer editing superpowers!
+const defaultColumn: Partial<ColumnDef<Person>> = {
+  cell: function Cell ({ getValue, row: { index }, column: { id }, table }) {
+    
+    const initialValue = getValue();
+    const [value, setValue] = useState(initialValue);
+
+    // When the input is blurred, we'll call our table meta's updateData function
+    const onBlur = () => {
+      table.options.meta?.updateData(index, id, value)
+    }
+
+    useEffect(() => {
+      setValue(initialValue)
+    }, [initialValue])
+
+    return (
+      <input
+        value={value as string}
+        onChange={e => setValue(e.target.value)}
+        onBlur={onBlur}
+      />
+    )
+  }
+}
+ 
 const TablePage = () => {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [data, setData] = useState<Person[]>(() => makeData(1000));
+  const [editableRowIndex, setEditableRowIndex] = useState<number>(-1);
   
   const refreshData = () => setData(old => makeData(1000));
   const resetTable = () => {
@@ -71,33 +106,37 @@ const TablePage = () => {
     table.resetRowSelection();
     table.resetSorting();
   }
+  
+  const handleEditClick = (rowIndex: number) => {
+    setEditableRowIndex(rowIndex);
+  }
 
   const columns = useMemo<ColumnDef<Person, any>[]>( () => 
     [
       {
         accessorKey: 'firstName',
         cell: info => info.getValue(),
-        header: () => <span>First Name</span>,
+        header: 'First Name',
         footer: props => props.column.id,
       },
       {
         accessorKey: 'lastName',
         id: 'lastName',
         cell: info => info.getValue(),
-        header: () => <span>Last Name</span>,
+        header: 'Last Name',
         footer: props => props.column.id,
       },
       {
         accessorKey: 'firstName',
         cell: info => info.getValue(),
-        header: () => <span>First Name</span>,
+        header: 'First Name',
         footer: props => props.column.id,
       },
       {
         accessorKey: 'lastName',
         id: 'lastName',
         cell: info => info.getValue(),
-        header: () => <span>Last Name</span>,
+        header: 'Last Name',
         footer: props => props.column.id,
       },
       {
@@ -111,7 +150,7 @@ const TablePage = () => {
           <div className='d-flex justify-content-center'>
             <button 
               className='btn btn-warning m-1'
-              // onClick={}
+              onClick={() => handleEditClick(cell.row.index)}
             >
               Edit
             </button>
@@ -135,22 +174,26 @@ const TablePage = () => {
       },
       {
         accessorKey: 'age',
-        header: () => 'Age',
+        header: 'Age',
+        // cell: (info) => (editableRowIndex===info.cell.row.index? info.getValue(): null),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'visits',
-        header: () => <span>Visits</span>,
+        header: 'Visits',
+        cell: info => info.getValue(),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'status',
-        header: () => <span>Status</span>,
+        header: 'Status',
+        cell: info => info.getValue(),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'progress',
-        header: () => <span>Profile Progress</span>,
+        header: 'Profile Progress',
+        cell: info => info.getValue(),
         footer: props => props.column.id,
       },
     ],
@@ -160,6 +203,7 @@ const TablePage = () => {
   const table = useReactTable({
     data,
     columns,
+    defaultColumn,
     filterFns: {
       // fuzzy: fuzzyFilter,
     },
@@ -178,6 +222,22 @@ const TablePage = () => {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    // Provide our updateData function to our table meta
+    meta: {
+      updateData: (rowIndex, columnId, value) => {
+        setData(old =>
+          old.map((row, index) => {
+            if (index === rowIndex) {
+              return {
+                ...old[rowIndex]!,
+                [columnId]: value,
+              }
+            }
+            return row;
+          })
+        )
+      },
+    },
     debugTable: true,
     debugHeaders: true,
     debugColumns: false,
@@ -200,6 +260,12 @@ const TablePage = () => {
           className="p-2 font-lg border border-block"
           placeholder="Search all Columns..."
         />
+        <button 
+          className='btn btn-primary'
+          onClick={() => exportExcel(table, 'data', true)}
+        >
+          Export
+        </button>
       </div>
       <div className='g-0 mb-2 scrollable'>
         <table> 
