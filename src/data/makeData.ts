@@ -6,7 +6,7 @@ export type Person = {
   age: number
   visits: number
   progress: number
-  status: 'Relationship' | 'Complicated' | 'Single'
+  status: 'Relat,ionship' | 'Co,mplicated' | 'Singl,e'
 }
 
 const range = (len: number) => {
@@ -25,9 +25,9 @@ const newPerson = (): Person => {
     visits: faker.datatype.number(1000),
     progress: faker.datatype.number(100),
     status: faker.helpers.shuffle<Person['status']>([
-      'Relationship',
-      'Complicated',
-      'Single',
+      'Relat,ionship',
+      'Co,mplicated',
+      'Singl,e',
     ])[0]!,
   }
 }

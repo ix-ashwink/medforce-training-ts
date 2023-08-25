@@ -1,10 +1,12 @@
-import React, {useState, useMemo, useEffect} from 'react'
+import React, {useState, useMemo, useEffect, FC} from 'react'
 import '../style/table.css';
 import {
   Column,
   Table,
+  Header,
   useReactTable,
   ColumnFiltersState,
+  ColumnOrderState,
   getCoreRowModel,
   getFilteredRowModel,
   getFacetedRowModel,
@@ -24,6 +26,8 @@ import {
 // import { RankingInfo, rankItem, compareItems, } from '@tanstack/match-sorter-utils'
 import { makeData, Person } from '../data/makeData';
 import exportExcel from '../services/excelExport';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -90,12 +94,59 @@ const defaultColumn: Partial<ColumnDef<Person>> = {
     )
   }
 }
+
+const reorderColumn = ( draggedColumnId: string, targetColumnId: string, columnOrder: string[] ): ColumnOrderState => {
+  columnOrder.splice(
+    columnOrder.indexOf(targetColumnId),
+    0,
+    columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
+  )
+  return [...columnOrder]
+}
+
+const DraggableColumnHeader: FC<{ header: Header<Person, unknown>, table: Table<Person> }> = ({ header, table }) => {
+  const { getState, setColumnOrder } = table
+  const { columnOrder } = getState()
+  const { column } = header
+
+  const [, dropRef] = useDrop({
+    accept: 'column',
+    drop: (draggedColumn: Column<Person>) => {
+      const newColumnOrder = reorderColumn(draggedColumn.id, column.id, columnOrder);
+      setColumnOrder(newColumnOrder);
+    },
+  })
+
+  const [{ isDragging }, dragRef, previewRef] = useDrag({
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+    item: () => column,
+    type: 'column',
+  })
+
+  return (
+    <th
+      ref={dropRef}
+      colSpan={header.colSpan}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <div ref={previewRef}>
+        {header.isPlaceholder
+          ? null
+          : flexRender(header.column.columnDef.header, header.getContext())}
+        <button ref={dragRef}>🟰</button>
+      </div>
+    </th>
+  )
+}
  
 const TablePage = () => {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [data, setData] = useState<Person[]>(() => makeData(1000));
+  const [columnVisibility, setColumnVisibility] = React.useState({})
   const [editableRowIndex, setEditableRowIndex] = useState<number>(-1);
   
   const refreshData = () => setData(old => makeData(1000));
@@ -105,29 +156,26 @@ const TablePage = () => {
     table.resetGlobalFilter();
     table.resetRowSelection();
     table.resetSorting();
+    table.resetColumnVisibility();
+    resetOrder();
   }
   
   const handleEditClick = (rowIndex: number) => {
     setEditableRowIndex(rowIndex);
   }
 
+  const exportCSV = () => {
+    exportExcel(table, 'data', true);
+  }
+
+  const resetOrder = () =>
+    setColumnOrder(columns.map(column => column.id as string))
+
   const columns = useMemo<ColumnDef<Person, any>[]>( () => 
     [
       {
         accessorKey: 'firstName',
-        cell: info => info.getValue(),
-        header: 'First Name',
-        footer: props => props.column.id,
-      },
-      {
-        accessorKey: 'lastName',
-        id: 'lastName',
-        cell: info => info.getValue(),
-        header: 'Last Name',
-        footer: props => props.column.id,
-      },
-      {
-        accessorKey: 'firstName',
+        enableHiding: false,
         cell: info => info.getValue(),
         header: 'First Name',
         footer: props => props.column.id,
@@ -144,7 +192,8 @@ const TablePage = () => {
         id: 'actions',
         enableSorting: false,
         enableColumnFilter: false,
-        header: () => <span>Actions</span>,
+        enableHiding: false,
+        header: 'Actions',
         footer: props => props.column.id,
         cell: ({ cell }) => (
           <div className='d-flex justify-content-center'>
@@ -167,6 +216,7 @@ const TablePage = () => {
         accessorFn: row => `${row.firstName} ${row.lastName}`,
         id: 'fullName',
         header: 'Full Name',
+        enableHiding: false,
         cell: info => info.getValue(),
         footer: props => props.column.id,
         // filterFn: 'fuzzy',
@@ -199,6 +249,9 @@ const TablePage = () => {
     ],
     []
   )
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(
+    columns.map(column => column.id as string) //must start out with populated columnOrder so we can splice
+  )
 
   const table = useReactTable({
     data,
@@ -210,8 +263,12 @@ const TablePage = () => {
     state: {
       columnFilters,
       globalFilter,
-      columnPinning: { right: ['actions'] }
+      columnPinning: { right: ['actions'] },
+      columnVisibility,
+      columnOrder,
     },
+    onColumnOrderChange: setColumnOrder,
+    onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     // globalFilterFn: fuzzyFilter,
@@ -238,8 +295,8 @@ const TablePage = () => {
         )
       },
     },
-    debugTable: true,
-    debugHeaders: true,
+    debugTable: false,
+    debugHeaders: false,
     debugColumns: false,
   })
 
@@ -253,16 +310,49 @@ const TablePage = () => {
 
   return (
     <div className="row p-2 mt-3">
-      <div className='col g-0 text-start mb-2'>
+      <div className='col d-flex g-0 text-start mb-2'>
         <DebouncedInput
           value= {globalFilter ?? ''}
           onChange= {value => setGlobalFilter(String(value))}
           className="p-2 font-lg border border-block"
           placeholder="Search all Columns..."
         />
+        <div className="dropdown mx-2">
+          <button 
+            className="btn btn-secondary dropdown-toggle p-2" type="button" id="columnvisibilitydropdown" 
+            data-bs-auto-close="outside" data-bs-toggle="dropdown" aria-expanded="false"
+          >
+            Visible Columns
+          </button>
+          <ul className="dropdown-menu" aria-labelledby="columnvisibilitydropdown">
+            <li onClick={(e) => e.stopPropagation()}>
+            {table.getAllLeafColumns().map(column => {
+              return (
+                <div key={column.id} className="px-1">
+                {
+                  column.columnDef.enableHiding !== false &&
+                  <label>
+                    <input
+                      {...{
+                        type: 'checkbox',
+                        checked: column.getIsVisible(),
+                        onChange: column.getToggleVisibilityHandler(),
+                      }}
+                    />{' '}
+                    {column.columnDef.header?.toString()}
+                  </label>
+                }
+                </div>
+              )
+            })}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div className='col g-0 text-end mb-2'>
         <button 
           className='btn btn-primary'
-          onClick={() => exportExcel(table, 'data', true)}
+          onClick={exportCSV}
         >
           Export
         </button>
