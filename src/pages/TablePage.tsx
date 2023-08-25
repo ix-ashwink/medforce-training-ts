@@ -1,8 +1,6 @@
 import React, {useState, useMemo, useEffect, FC} from 'react'
 import '../style/table.css';
 import {
-  Column,
-  Table,
   useReactTable,
   ColumnFiltersState,
   ColumnOrderState,
@@ -12,20 +10,15 @@ import {
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
   getPaginationRowModel,
-  sortingFns,
   getSortedRowModel,
-  FilterFn,
-  SortingFn,
   ColumnDef,
   flexRender,
-  FilterFns,
   RowData,
 } from '@tanstack/react-table'
 
-// import { RankingInfo, rankItem, compareItems, } from '@tanstack/match-sorter-utils'
 import { makeData, Person } from '../data/makeData';
 import exportExcel from '../services/excelExport';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import DraggableColumnHeader from '../components/TableColumnHeader';
 import DebouncedInput from '../components/DebouncedInput';
@@ -35,40 +28,6 @@ declare module '@tanstack/react-table' {
     updateData: (rowIndex: number, columnId: string, value: unknown) => void
   }
 }
-
-// declare module '@tanstack/table-core' {
-//   interface FilterFns {
-//     fuzzy: FilterFn<unknown>
-//   }
-//   interface FilterMeta {
-//     itemRank: RankingInfo
-//   }
-// }
-
-// const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-//   // Rank the item
-//   const itemRank = rankItem(row.getValue(columnId), value)
-
-//   // Store the itemRank info
-//   addMeta({ itemRank, })
-
-//   // Return if the item should be filtered in/out
-//   return itemRank.passed
-// }
-
-// const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
-//   let dir = 0
-
-//   // Only sort by rank if the column has ranking information
-//   if (rowA.columnFiltersMeta[columnId]) {
-//     dir = compareItems(
-//       rowA.columnFiltersMeta[columnId]?.itemRank!,
-//       rowB.columnFiltersMeta[columnId]?.itemRank!
-//     )
-//   }
-//   // Provide an alphanumeric fallback for when the item ranks are equal
-//   return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
-// }
 
 // Give our default column cell renderer editing superpowers!
 const defaultColumn: Partial<ColumnDef<Person>> = {
@@ -175,8 +134,6 @@ const TablePage = () => {
         enableHiding: false,
         cell: info => info.getValue(),
         footer: props => props.column.id,
-        // filterFn: 'fuzzy',
-        // sortingFn: fuzzySort,
       },
       {
         accessorKey: 'age',
@@ -221,9 +178,6 @@ const TablePage = () => {
     data,
     columns,
     defaultColumn,
-    filterFns: {
-      // fuzzy: fuzzyFilter,
-    },
     state: {
       columnFilters,
       globalFilter,
@@ -235,7 +189,6 @@ const TablePage = () => {
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    // globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -446,7 +399,6 @@ const TablePage = () => {
             Refresh Data
         </button>
       </div>
-      {/* <pre>{JSON.stringify(table.getState(), null, 2)}</pre> */}
     </div>
   )
 }
