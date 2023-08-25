@@ -3,7 +3,6 @@ import '../style/table.css';
 import {
   Column,
   Table,
-  Header,
   useReactTable,
   ColumnFiltersState,
   ColumnOrderState,
@@ -28,6 +27,8 @@ import { makeData, Person } from '../data/makeData';
 import exportExcel from '../services/excelExport';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import DraggableColumnHeader from '../components/TableColumnHeader';
+import DebouncedInput from '../components/DebouncedInput';
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -94,52 +95,6 @@ const defaultColumn: Partial<ColumnDef<Person>> = {
     )
   }
 }
-
-const reorderColumn = ( draggedColumnId: string, targetColumnId: string, columnOrder: string[] ): ColumnOrderState => {
-  columnOrder.splice(
-    columnOrder.indexOf(targetColumnId),
-    0,
-    columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
-  )
-  return [...columnOrder]
-}
-
-const DraggableColumnHeader: FC<{ header: Header<Person, unknown>, table: Table<Person> }> = ({ header, table }) => {
-  const { getState, setColumnOrder } = table
-  const { columnOrder } = getState()
-  const { column } = header
-
-  const [, dropRef] = useDrop({
-    accept: 'column',
-    drop: (draggedColumn: Column<Person>) => {
-      const newColumnOrder = reorderColumn(draggedColumn.id, column.id, columnOrder);
-      setColumnOrder(newColumnOrder);
-    },
-  })
-
-  const [{ isDragging }, dragRef, previewRef] = useDrag({
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
-    item: () => column,
-    type: 'column',
-  })
-
-  return (
-    <th
-      ref={dropRef}
-      colSpan={header.colSpan}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
-    >
-      <div ref={previewRef}>
-        {header.isPlaceholder
-          ? null
-          : flexRender(header.column.columnDef.header, header.getContext())}
-        <button ref={dragRef}>🟰</button>
-      </div>
-    </th>
-  )
-}
  
 const TablePage = () => {
 
@@ -168,13 +123,13 @@ const TablePage = () => {
     exportExcel(table, 'data', true);
   }
 
-  const resetOrder = () =>
-    setColumnOrder(columns.map(column => column.id as string))
+  const resetOrder = () => setColumnOrder(columns.map(column => column.id as string));
 
   const columns = useMemo<ColumnDef<Person, any>[]>( () => 
     [
       {
         accessorKey: 'firstName',
+        id: 'firstName',
         enableHiding: false,
         cell: info => info.getValue(),
         header: 'First Name',
@@ -183,6 +138,7 @@ const TablePage = () => {
       {
         accessorKey: 'lastName',
         id: 'lastName',
+        enableHiding: true,
         cell: info => info.getValue(),
         header: 'Last Name',
         footer: props => props.column.id,
@@ -224,24 +180,32 @@ const TablePage = () => {
       },
       {
         accessorKey: 'age',
+        id: 'age',
+        enableHiding: true,
         header: 'Age',
         // cell: (info) => (editableRowIndex===info.cell.row.index? info.getValue(): null),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'visits',
+        id: 'visits',
+        enableHiding: true,
         header: 'Visits',
         cell: info => info.getValue(),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'status',
+        id: 'status',
+        enableHiding: true,
         header: 'Status',
         cell: info => info.getValue(),
         footer: props => props.column.id,
       },
       {
         accessorKey: 'progress',
+        id: 'progress',
+        enableHiding: true,
         header: 'Profile Progress',
         cell: info => info.getValue(),
         footer: props => props.column.id,
@@ -295,9 +259,9 @@ const TablePage = () => {
         )
       },
     },
-    debugTable: false,
-    debugHeaders: false,
-    debugColumns: false,
+    debugTable: true,
+    debugHeaders: true,
+    debugColumns: true,
   })
 
   useEffect(() => {
@@ -362,40 +326,15 @@ const TablePage = () => {
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  return (
-                    <th 
-                      key={header.id} colSpan={header.colSpan}
-                      className = {header.column.id === 'actions'? 'sticky-Col':''}
-                      >
-                      {header.isPlaceholder ? null : (
-                        <>
-                          <div
-                            {...{
-                              className: header.column.getCanSort()
-                                ? 'cursor-pointer select-none': '',
-                                onClick: header.column.getToggleSortingHandler(),
-                            }}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {{
-                              asc: ' 🔼',
-                              desc: ' 🔽',
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                          {header.column.getCanFilter() ? (
-                            <div>
-                              <Filter column={header.column} table={table} />
-                            </div>
-                          ) : null}
-                        </>
-                      )}
-                    </th>
-                  )
-                })}
+                {headerGroup.headers.map(header => (
+                  <DndProvider backend={HTML5Backend}>
+                    <DraggableColumnHeader
+                      key={header.id}
+                      header={header}
+                      table={table}
+                    />
+                  </DndProvider>
+                ))}
               </tr>
             ))}
           </thead>
@@ -474,7 +413,6 @@ const TablePage = () => {
           | Go to page:
           <input
             type="number"
-            // defaultValue={table.getState().pagination.pageIndex + 1}
             value={table.getState().pagination.pageIndex + 1}
             onChange={e => {
               const page = e.target.value ? Number(e.target.value) - 1 : 0
@@ -510,108 +448,6 @@ const TablePage = () => {
       </div>
       {/* <pre>{JSON.stringify(table.getState(), null, 2)}</pre> */}
     </div>
-  )
-}
-function Filter({ column, table, }: 
-  {
-    column: Column<any, unknown>
-    table: Table<any>
-  }) {
-  const firstValue = table
-    .getPreFilteredRowModel()
-    .flatRows[0]?.getValue(column.id)
-
-  const columnFilterValue = column.getFilterValue()
-
-  const sortedUniqueValues = useMemo(
-    () =>
-      typeof firstValue === 'number'
-        ? []
-        : Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues()]
-  )
-
-  return typeof firstValue === 'number' ? (
-    <div>
-      <div className="d-flex space-x-2 m-1">
-        <DebouncedInput
-          type="number"
-          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
-          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
-          value={(columnFilterValue as [number, number])?.[0] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [value, old?.[1]])
-          }
-          placeholder={`Min ${
-            column.getFacetedMinMaxValues()?.[0]
-              ? `(${column.getFacetedMinMaxValues()?.[0]})`
-              : ''
-          }`}
-          className="px-1 mx-1 border rounded"
-        />
-        <DebouncedInput
-          type="number"
-          min={Number(column.getFacetedMinMaxValues()?.[0] ?? '')}
-          max={Number(column.getFacetedMinMaxValues()?.[1] ?? '')}
-          value={(columnFilterValue as [number, number])?.[1] ?? ''}
-          onChange={value =>
-            column.setFilterValue((old: [number, number]) => [old?.[0], value])
-          }
-          placeholder={`Max ${
-            column.getFacetedMinMaxValues()?.[1]
-              ? `(${column.getFacetedMinMaxValues()?.[1]})`
-              : ''
-          }`}
-          className="px-1 mx-1 border rounded"
-        />
-      </div>
-    </div>
-  ) : (
-    <>
-      <datalist id={column.id + 'list'}>
-        {sortedUniqueValues.slice(0, 5000).map((value: any) => (
-          <option value={value} key={value} />
-        ))}
-      </datalist>
-      <DebouncedInput
-        type="text"
-        value={(columnFilterValue ?? '') as string}
-        onChange={value => column.setFilterValue(value)}
-        placeholder={`Search... (${column.getFacetedUniqueValues().size})`}
-        className="px-2 border rounded"
-        list={column.id + 'list'}
-      />
-    </>
-  )
-}
-
-// A debounced input react component
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-  }, [value])
-
-  return (
-    <input {...props} value={value} onChange={e => setValue(e.target.value)} />
   )
 }
 export default TablePage;
