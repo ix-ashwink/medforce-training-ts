@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect, FC} from 'react'
+import React, { useState, useMemo, useEffect } from 'react';
 import '../style/table.css';
 import {
   useReactTable,
@@ -17,11 +17,11 @@ import {
 } from '@tanstack/react-table'
 
 import { makeData, Person } from '../data/makeData';
-import exportExcel from '../services/excelExport';
+import exportExcel from '../utils/excelExport';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import DraggableColumnHeader from '../components/TableColumnHeader';
-import DebouncedInput from '../components/DebouncedInput';
+import DraggableColumnHeader from '../components/table/TableColumnHeader';
+import DebouncedInput from '../components/table/DebouncedInput';
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -60,7 +60,7 @@ const TablePage = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [data, setData] = useState<Person[]>(() => makeData(1000));
-  const [columnVisibility, setColumnVisibility] = React.useState({})
+  const [columnVisibility, setColumnVisibility] = React.useState({});
   const [editableRowIndex, setEditableRowIndex] = useState<number>(-1);
   
   const refreshData = () => setData(old => makeData(1000));
@@ -223,7 +223,7 @@ const TablePage = () => {
         table.setSorting([{ id: 'fullName', desc: false }])
       }
     }
-  }, [table.getState().columnFilters[0]?.id])
+  }, [table.getState().columnFilters[0]?.id]);
 
   return (
     <div className="row p-2 mt-3">
@@ -247,13 +247,14 @@ const TablePage = () => {
               return (
                 <div key={column.id} className="px-1">
                 {
-                  column.columnDef.enableHiding !== false &&
+                  // column.columnDef.enableHiding !== false &&
                   <label>
                     <input
                       {...{
                         type: 'checkbox',
                         checked: column.getIsVisible(),
                         onChange: column.getToggleVisibilityHandler(),
+                        disabled: (column.columnDef.enableHiding !== true)
                       }}
                     />{' '}
                     {column.columnDef.header?.toString()}
@@ -318,9 +319,12 @@ const TablePage = () => {
         <div>
           Showing 
           <strong>
-          {' '} {(table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + 1} 
+          {' '} {(table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + 1}
           {' '} to {' '}
-            {(table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + table.getState().pagination.pageSize}
+            {table.getCanNextPage() &&
+            (table.getState().pagination.pageSize * table.getState().pagination.pageIndex) + table.getState().pagination.pageSize}
+            {!table.getCanNextPage() &&
+            table.getPrePaginationRowModel().rows.length % table.getState().pagination.pageSize}
           </strong>  
           {' '} of {' '}
           <strong>
