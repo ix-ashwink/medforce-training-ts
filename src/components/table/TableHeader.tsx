@@ -67,7 +67,7 @@ const TableHeader: FC<TableHeaderProps> = ({setFilter, table}) => {
             className='btn btn-primary'
             onClick={exportCSV}
             >
-            Export
+                Export
             </button>
         </div>
         </>

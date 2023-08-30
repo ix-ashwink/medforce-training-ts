@@ -212,18 +212,15 @@ const TablePage = () => {
         )
       },
     },
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: true,
   })
 
-  useEffect(() => {
-    if (table.getState().columnFilters[0]?.id === 'fullName') {
-      if (table.getState().sorting[0]?.id !== 'fullName') {
-        table.setSorting([{ id: 'fullName', desc: false }])
-      }
-    }
-  }, [table.getState().columnFilters[0]?.id]);
+  // useEffect(() => {
+  //   if (table.getState().columnFilters[0]?.id === 'fullName') {
+  //     if (table.getState().sorting[0]?.id !== 'fullName') {
+  //       table.setSorting([{ id: 'fullName', desc: false }])
+  //     }
+  //   }
+  // }, [table.getState().columnFilters[0]?.id]);
 
   return (
     <div className="row p-2 mt-3">
