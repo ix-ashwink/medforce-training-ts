@@ -6,6 +6,8 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import FormPage from './pages/FormPage';
 import TablePage from './pages/TablePage';
+import TablePage2 from './pages/TablePage2';
+import EmailEditorPage from './pages/EmailEditorPage';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
             <Routes>
               <Route path="/" element= {<FormPage />} />
               <Route path="table" element= {<TablePage />} />
+              <Route path="table2" element = {<TablePage2 />} />
+              <Route path="email-editor" element = {<EmailEditorPage />} />
             </Routes>
           </div>
         </div>  

@@ -12,12 +12,22 @@ const Navbar = () => {
                 <ul className="navbar-nav ml-auto">
                     <li className="nav-item">
                         <Link className="nav-link" to={'/'}>
-                        Form
+                            Form
                         </Link>
                     </li>
                     <li className="nav-item">
                         <Link className="nav-link" to={'table'}>
-                        Table
+                            Table
+                        </Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link className="nav-link" to={'table2'}>
+                            Table2
+                        </Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link className="nav-link" to={'email-editor'}>
+                            Email Editor
                         </Link>
                     </li>
                 </ul>
