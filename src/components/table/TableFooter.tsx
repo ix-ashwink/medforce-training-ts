@@ -1,6 +1,6 @@
 import { Table } from "@tanstack/react-table";
 
-const TableFooter = (table: Table<any>) => {
+const TableFooter = (table: Table<unknown>) => {
     
     return (
         <div className="g-0 d-flex align-items-center gap-2 mb-3">
