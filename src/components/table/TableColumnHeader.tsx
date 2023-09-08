@@ -1,12 +1,11 @@
 import { FC, useMemo } from 'react';
 import { Column, Table, Header, flexRender, ColumnOrderState } from '@tanstack/react-table';
-import { Person } from '../../data/makeData';
 import { useDrag, useDrop } from 'react-dnd';
 import DebouncedInput from './DebouncedInput';
 
 function Filter({ column, table, }: {
-  column: Column<any, unknown>
-  table: Table<any>
+  column: Column<unknown, unknown>
+  table: Table<unknown>
 }) {
   const firstValue = table.getPreFilteredRowModel().flatRows[0]?.getValue(column.id);
   const columnFilterValue = column.getFilterValue();
@@ -55,7 +54,7 @@ function Filter({ column, table, }: {
   ) : (
     <>
       <datalist id={column.id + 'list'}>
-        {sortedUniqueValues.slice(0, 5000).map((value: any) => (
+        {sortedUniqueValues.slice(0, 5000).map((value: string) => (
           <option value={value} key={value} />
         ))}
       </datalist>
@@ -80,14 +79,14 @@ const reorderColumn = ( draggedColumnId: string, targetColumnId: string, columnO
   return [...columnOrder]
 }
 
-const DraggableColumnHeader: FC<{ header: Header<Person, unknown>, table: Table<Person> }> = ({ header, table }) => {
+const DraggableColumnHeader: FC<{ header: Header<unknown, unknown>, table: Table<unknown> }> = ({ header, table }) => {
   const { getState, setColumnOrder } = table;
   const { columnOrder } = getState();
   const { column } = header;
   
   const [, dropRef] = useDrop({
     accept: 'column',
-    drop: (draggedColumn: Column<Person>) => {
+    drop: (draggedColumn: Column<unknown>) => {
       const newColumnOrder = reorderColumn(draggedColumn.id, column.id, columnOrder);
       setColumnOrder(newColumnOrder);
     },

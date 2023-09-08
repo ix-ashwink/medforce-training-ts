@@ -5,7 +5,7 @@ import exportExcel from '../../utils/excelExport';
 
 interface TableHeaderProps {
     setFilter: ( globalFilter: string) => void;
-    table: Table<any>,
+    table: Table<unknown>,
 }
 
 const TableHeader: FC<TableHeaderProps> = ({setFilter, table}) => {

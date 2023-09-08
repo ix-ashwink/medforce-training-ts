@@ -1,7 +1,7 @@
 import { useState, useEffect, FC } from 'react';
 import '../../style/table.css';
 import { 
-    useReactTable, ColumnFiltersState, ColumnOrderState, getCoreRowModel, getFilteredRowModel, getFacetedRowModel, 
+    useReactTable, ColumnFiltersState, ColumnOrderState, getCoreRowModel, getFilteredRowModel, getFacetedRowModel,
     getFacetedUniqueValues, getFacetedMinMaxValues, getPaginationRowModel, getSortedRowModel, ColumnDef, flexRender, RowData,
 } from '@tanstack/react-table';
 import { DndProvider } from 'react-dnd';
@@ -17,20 +17,20 @@ declare module '@tanstack/react-table' {
 }
 
 interface TableProps {
-    data: any[];
-    columns: ColumnDef<any>[];
+    data: unknown[];
+    columns: ColumnDef<unknown>[];
     // defaultColumn: Partial<ColumnDef<any>>;
 }
 
 const Table: FC<TableProps> = ({ data, columns }) => {
 
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [globalFilter, setGlobalFilter] = useState('');
+    const [globalFilter, setGlobalFilter] = useState<string>('');
     const [columnVisibility, setColumnVisibility] = useState({});
     //must start out with populated columnOrder so we can splice
     const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(columns.map(column => column.id as string));
     // Give our default column cell renderer editing superpowers!
-    const defaultColumn: Partial<ColumnDef<any>> = {
+    const defaultColumn: Partial<ColumnDef<unknown>> = {
         cell: function Cell ({ getValue, row: { index }, column: { id }, table }) {
         
             const initialValue = getValue();
