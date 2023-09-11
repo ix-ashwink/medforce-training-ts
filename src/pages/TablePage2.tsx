@@ -17,7 +17,7 @@ const TablePage2 = () => {
     console.log(`Deleted with age: ${person.age}`);
   }
 
-  const columns = useMemo<ColumnDef<Person, any>[]>( () => 
+  const columns = useMemo<ColumnDef<Person, unknown>[]>( () => 
     [
       {
         accessorKey: 'firstName',

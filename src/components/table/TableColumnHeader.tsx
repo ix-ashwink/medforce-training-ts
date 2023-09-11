@@ -4,8 +4,8 @@ import { useDrag, useDrop } from 'react-dnd';
 import DebouncedInput from './DebouncedInput';
 
 function Filter({ column, table, }: {
-  column: Column<unknown, unknown>
-  table: Table<unknown>
+  column: Column<any, any>
+  table: Table<any>
 }) {
   const firstValue = table.getPreFilteredRowModel().flatRows[0]?.getValue(column.id);
   const columnFilterValue = column.getFilterValue();
@@ -79,7 +79,7 @@ const reorderColumn = ( draggedColumnId: string, targetColumnId: string, columnO
   return [...columnOrder]
 }
 
-const DraggableColumnHeader: FC<{ header: Header<unknown, unknown>, table: Table<unknown> }> = ({ header, table }) => {
+const DraggableColumnHeader: FC<{ header: Header<any, any>, table: Table<any> }> = ({ header, table }) => {
   const { getState, setColumnOrder } = table;
   const { columnOrder } = getState();
   const { column } = header;

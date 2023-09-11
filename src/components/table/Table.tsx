@@ -17,8 +17,8 @@ declare module '@tanstack/react-table' {
 }
 
 interface TableProps {
-    data: unknown[];
-    columns: ColumnDef<unknown>[];
+    data: any[];
+    columns: ColumnDef<any>[];
     // defaultColumn: Partial<ColumnDef<any>>;
 }
 
@@ -30,7 +30,7 @@ const Table: FC<TableProps> = ({ data, columns }) => {
     //must start out with populated columnOrder so we can splice
     const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(columns.map(column => column.id as string));
     // Give our default column cell renderer editing superpowers!
-    const defaultColumn: Partial<ColumnDef<unknown>> = {
+    const defaultColumn: Partial<ColumnDef<any>> = {
         cell: function Cell ({ getValue, row: { index }, column: { id }, table }) {
         
             const initialValue = getValue();
