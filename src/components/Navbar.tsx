@@ -30,6 +30,11 @@ const Navbar = () => {
                             Email Editor
                         </Link>
                     </li>
+                    <li className="nav-item">
+                        <Link className="nav-link" to={'gantt-chart'}>
+                            Gantt Chart
+                        </Link>
+                    </li>
                 </ul>
             </div>
           </div>

@@ -8,6 +8,7 @@ import FormPage from './pages/FormPage';
 import TablePage from './pages/TablePage';
 import TablePage2 from './pages/TablePage2';
 import EmailEditorPage from './pages/EmailEditorPage';
+import GanttChartPage from './pages/GanttChartPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="table" element= {<TablePage />} />
               <Route path="table2" element = {<TablePage2 />} />
               <Route path="email-editor" element = {<EmailEditorPage />} />
+              <Route path="gantt-chart" element = {<GanttChartPage />} />
             </Routes>
           </div>
         </div>  
